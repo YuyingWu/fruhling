@@ -9,23 +9,16 @@
 {{- $titles := dict -}}
 {{- $descriptions := dict -}}
 {{- $videos := dict -}}
-{{- $cdnImg := slice -}}
-
 {{- range $lines -}}
-  {{- $descr := split . ";" -}}
-
-  {{- if strings.HasPrefix (index $descr 0) "https://wyy-static.oss-cn-guangzhou.aliyuncs.com" -}}
-    {{- $resource := dict "url" (index $descr 0) "title" (index $descr 1) "description" (index $descr 2) -}}
-    {{- $cdnImg = $cdnImg | append $resource -}}
-  {{- else if strings.Contains (index $descr 0) ":" -}}
-    {{- $imgVideo := split (index $descr 0) ":"  -}}
-    {{- $titles = merge $titles (dict (index $imgVideo 0) (index $descr 1)) -}}
-    {{- $videos = merge $videos (dict (index $imgVideo 0) (index $imgVideo 1)) -}}
-  {{- else -}}
-    {{- $titles = merge $titles (dict (index $descr 0) (index $descr 1)) -}}
-  {{- end -}}
-
-  {{- $descriptions = merge $descriptions (dict (index $descr 0) (index $descr 2)) -}}
+    {{- $descr := split . ";" -}}
+    {{- if strings.Contains (index $descr 0) ":" -}}
+        {{- $imgVideo := split (index $descr 0) ":"  -}}
+        {{- $titles = merge $titles (dict (index $imgVideo 0) (index $descr 1)) -}}
+        {{- $videos = merge $videos (dict (index $imgVideo 0) (index $imgVideo 1)) -}}
+    {{- else -}}
+        {{- $titles = merge $titles (dict (index $descr 0) (index $descr 1)) -}}
+    {{- end -}}
+    {{- $descriptions = merge $descriptions (dict (index $descr 0) (index $descr 2)) -}}
 {{- end -}}
 
 <div class="container">
@@ -77,12 +70,6 @@
                                                 <img src="{{ $thumb.RelPermalink | relURL }}" alt="{{ $title }}">
                                             </figure>
                                         {{- end -}}
-                                    {{- end -}}
-
-                                    {{- range $cdnImg -}}
-                                    <figure data-src="{{ .url }}"{{ if .description }} data-sub-html="<strong>{{ .title }}</strong>. {{ .description }}"{{ end }} class="grid-item">
-                                        <img src="{{ .url }}" alt="{{ .title }}">
-                                    </figure>
                                     {{- end -}}
                                 </div>
                             </div>

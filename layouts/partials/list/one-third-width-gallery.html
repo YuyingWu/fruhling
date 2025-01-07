@@ -2,37 +2,52 @@
 
 {{- $lines := split $gallery.RawContent "\n" -}}
 {{- $map := dict -}}
+{{- $cdnImg := slice -}}
+
 {{- range $lines -}}
     {{- $descr := split . ";" -}}
-    {{- $map = merge $map (dict (index $descr 0) (index $descr 1)) -}}
+    {{- if strings.HasPrefix (index $descr 0) "https://wyy-static.oss-cn-guangzhou.aliyuncs.com" -}}
+        {{- $resource := dict "url" (index $descr 0) "title" (index $descr 1) "description" (index $descr 2) -}}
+        {{- $cdnImg = $cdnImg | append $resource -}}
+    {{- else -}}
+        {{- $map = merge $map (dict (index $descr 0) (index $descr 1)) -}}
+    {{- end -}}
 {{- end -}}
+
 <div{{- if .Draft -}} class="draft"{{- end -}}>
     <article>
         <div class="post_img swiper post_text_top_radius">
             <div class="swiper-wrapper title-gallery" style="text-align: center">
-                {{- range first 10 ($gallery.Resources.ByType "image") -}}
-                {{- $preview := .Fit "970x728 q100" -}}
-                {{- $thumb := .Fit "96x76 q100" -}}
-                {{- $title := index $map .Name -}}
-                {{- $image := .Fit "1920x1920 q90" -}}
-                {{- $originalImage := . -}}
-                {{- with .Exif -}}
-                    {{- if eq 6 .Tags.Orientation -}}
-                        {{- $image = $originalImage.Fit "1920x1920 q90 r270" -}}
-                        {{- $preview = $originalImage.Fit "970x728 q90 r270" -}}
-                        {{- $thumb = $originalImage.Fit "96x76 q90 r270" -}}
-                    {{- else if eq 8 .Tags.Orientation -}}
-                        {{- $image = $originalImage.Fit "1920x1920 q90 r90" -}}
-                        {{- $preview = $originalImage.Fit "970x728 q90 r90" -}}
-                        {{- $thumb = $originalImage.Fit "96x76 q90 r90" -}}
-                    {{- else if eq 3 .Tags.Orientation -}}
-                        {{- $image = $originalImage.Fit "1920x1920 q90 r180" -}}
-                        {{- $preview = $originalImage.Fit "970x728 q90 r180" -}}
-                        {{- $thumb = $originalImage.Fit "96x76 q90 r180" -}}
+                {{- $photosCount := (or .Params.summary_photos_count 10) -}}
+                {{- range first $photosCount ($gallery.Resources.ByType "image") -}}
+                    {{- $preview := .Fit "970x728 q100" -}}
+                    {{- $thumb := .Fit "96x76 q100" -}}
+                    {{- $title := index $map .Name -}}
+                    {{- $image := .Fit "1920x1920 q90" -}}
+                    {{- $originalImage := . -}}
+                    {{- with .Exif -}}
+                        {{- if eq 6 .Tags.Orientation -}}
+                            {{- $image = $originalImage.Fit "1920x1920 q90 r270" -}}
+                            {{- $preview = $originalImage.Fit "970x728 q90 r270" -}}
+                            {{- $thumb = $originalImage.Fit "96x76 q90 r270" -}}
+                        {{- else if eq 8 .Tags.Orientation -}}
+                            {{- $image = $originalImage.Fit "1920x1920 q90 r90" -}}
+                            {{- $preview = $originalImage.Fit "970x728 q90 r90" -}}
+                            {{- $thumb = $originalImage.Fit "96x76 q90 r90" -}}
+                        {{- else if eq 3 .Tags.Orientation -}}
+                            {{- $image = $originalImage.Fit "1920x1920 q90 r180" -}}
+                            {{- $preview = $originalImage.Fit "970x728 q90 r180" -}}
+                            {{- $thumb = $originalImage.Fit "96x76 q90 r180" -}}
+                        {{- end -}}
                     {{- end -}}
+                    <figure data-src="{{- $image.RelPermalink | relURL -}}" data-thumb="{{- $thumb.RelPermalink | relURL -}}" class="swiper-slide">
+                        <img src="{{- $preview.RelPermalink | relURL -}}" alt="{{- $title -}}">
+                    </figure>
                 {{- end -}}
-                <figure data-src="{{- $image.RelPermalink | relURL -}}" data-thumb="{{- $thumb.RelPermalink | relURL -}}" class="swiper-slide">
-                    <img src="{{- $preview.RelPermalink | relURL -}}" alt="{{- $title -}}">
+
+                {{- range first $photosCount $cdnImg -}}
+                <figure data-src="{{ .url }}" class="swiper-slide">
+                    <img src="{{ .url }}" alt="{{ .title }} | {{ .description }}">
                 </figure>
                 {{- end -}}
             </div>

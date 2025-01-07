@@ -3,14 +3,9 @@
 {{ $lines := split $gallery.RawContent "\n" }}
 {{ $map := dict }}
 {{- $videos := dict -}}
-{{- $cdnImg := slice -}}
-
 {{ range $lines }}
     {{ $descr := split . ";" }}
-    {{- if strings.HasPrefix (index $descr 0) "https://wyy-static.oss-cn-guangzhou.aliyuncs.com" -}}
-        {{- $resource := dict "url" (index $descr 0) "title" (index $descr 1) "description" (index $descr 2) -}}
-        {{- $cdnImg = $cdnImg | append $resource -}}
-    {{- else if strings.Contains (index $descr 0) ":" -}}
+    {{- if strings.Contains (index $descr 0) ":" -}}
         {{- $imgVideo := split (index $descr 0) ":"  -}}
         {{ $map = merge $map (dict (index $imgVideo 0) (index $descr 1)) }}
         {{- $videos = merge $videos (dict (index $imgVideo 0) (index $imgVideo 1)) -}}
@@ -52,27 +47,21 @@
 
                             {{- $title := index $map .Name -}}
 
-                            {{- if isset $videos .Name -}}
-                                {{- if strings.Contains (index $videos .Name) "youtu" -}}
-                                <figure data-src="{{- index $videos .Name -}}" data-poster="{{ $image.RelPermalink | relURL }}" class="grid-item">
-                                    <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}">
-                                </figure>
-                                {{- else -}}
-                                <figure data-video='{"source": [{"src":"{{- $gallery.RelPermalink -}}{{- index $videos .Name -}}", "type":"video/mp4"}], "attributes": {"preload": false, "controls": true}}' data-poster="{{ $image.RelPermalink | relURL }}" class="grid-item">
-                                    <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}">
-                                </figure>
-                                {{- end -}}
+                        {{- if isset $videos .Name -}}
+                            {{- if strings.Contains (index $videos .Name) "youtu" -}}
+                            <figure data-src="{{- index $videos .Name -}}" data-poster="{{ $image.RelPermalink | relURL }}" class="grid-item">
+                                <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}">
+                            </figure>
                             {{- else -}}
-                                <figure data-src="{{ $image.RelPermalink | relURL }}" data-thumb="{{ $thumb.RelPermalink | relURL }}" class="grid-item">
-                                    <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}">
-                                </figure>
+                            <figure data-video='{"source": [{"src":"{{- $gallery.RelPermalink -}}{{- index $videos .Name -}}", "type":"video/mp4"}], "attributes": {"preload": false, "controls": true}}' data-poster="{{ $image.RelPermalink | relURL }}" class="grid-item">
+                                <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}">
+                            </figure>
                             {{- end -}}
+                        {{- else -}}
+                            <figure data-src="{{ $image.RelPermalink | relURL }}" data-thumb="{{ $thumb.RelPermalink | relURL }}" class="grid-item">
+                                <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}">
+                            </figure>
                         {{- end -}}
-
-                        {{- range first $photosCount $cdnImg -}}
-                        <figure data-src="{{ .url }}" class="grid-item">
-                            <img src="{{ .url }}" alt="{{ .title }} | {{ .description }}">
-                        </figure>
                         {{- end -}}
                     </div>
                 </div>
