@@ -8,8 +8,12 @@
         <div class="col-lg-10">
             <div class="row blog_posts cardPostStyle">
                 {{- $allowedTypes := .Site.Params.fruhling.indexPageContentTypes | default (slice "blog" "gallery" "note" "story") -}}
-                {{- range (where (where .Paginator.Pages "Type" "in" $allowedTypes) ".Params.unlisted" "!=" "true")  -}}
-                {{- partialCached "list/full-width-post.html" . .RelPermalink -}}
+                {{- $pages := .Paginator.Pages -}}
+                {{- $filteredPages := where $pages ".Params.unlisted" "!=" "true" -}}
+                {{- range $filteredPages -}}
+                    {{- if or (not .Section) (not .Type) (in $allowedTypes .Type) -}}
+                        {{- partialCached "list/full-width-post.html" . .RelPermalink -}}
+                    {{- end -}}
                 {{- end -}}
             </div>
 

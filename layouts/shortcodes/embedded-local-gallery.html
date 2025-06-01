@@ -23,7 +23,7 @@
         {{- /* 优先展示 Markdown 中的图片 */ -}}
         {{- range $mdImages -}}
             <figure data-src="{{ .url }}" class="swiper-slide">
-                <img src="{{ .url }}" alt="{{ .title }}">
+                <img src="{{ .url }}" alt="{{ .title }}" />
             </figure>
         {{- end -}}
 
@@ -46,7 +46,7 @@
             {{- end -}}
 
             <figure data-src="{{ $image.RelPermalink | relURL }}" data-thumb="{{ $thumb.RelPermalink | relURL }}" class="swiper-slide">
-                <img src="{{ $preview.RelPermalink | relURL }}">
+                <img src="{{ $preview.RelPermalink | relURL }}" />
             </figure>
         {{- end -}}
     </div>
