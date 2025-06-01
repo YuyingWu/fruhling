@@ -1,0 +1,14 @@
+[readMore]
+    other = '阅读更多'
+[fullGallery]
+    other = '查看完整图库'
+[fileNotFound]
+    other = '未找到文件'
+[blog]
+    other = '博客'
+[photogalleries]
+    other = '图片库'
+[stories]
+    other = '故事'
+[deprecated]
+    other = "这是一篇从网站旧版本导入的过时文章。此处的示例和代码片段已不可用，无法恢复"

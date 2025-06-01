@@ -63,6 +63,36 @@ figure {
     margin-bottom: 0;
 }
 
+/* 修改博客封面图样式，使其宽度与 post_text 保持一致 */
+.post_img {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    overflow: hidden;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.post_img img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 400px;
+}
+
+/* 博客文章整体样式 */
+.blog-article {
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.blog-article:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
 .blog_posts .row .cardPostStyle div article .post_text {
     /*padding: 24px 30px 15px 30px;*/
     background: #fff;
@@ -286,6 +316,15 @@ article table td {
 
     .post_nav {
         padding: 0px 10px 10px 10px ;
+    }
+
+    /* 移动设备上的博客文章样式 */
+    .blog-article {
+        margin-bottom: 20px;
+    }
+    
+    .post_img img {
+        max-height: 300px;
     }
 
     article h1, article h2, article h3, article h4, article h5, article h6 {

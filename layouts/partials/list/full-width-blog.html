@@ -1,5 +1,5 @@
 <div class="col-md-12 col-lg-12{{ if .Draft }} draft{{ end }}">
-    <article>
+    <article class="blog-article">
         {{ partial "shared/post-title-image-or-gallery.html" . }}
         {{- $topRadius := "" -}}
         {{- $images := .Resources.ByType "image" -}}

@@ -4,6 +4,7 @@
 {{ $map := dict }}
 {{- $videos := dict -}}
 {{- $mdImages := slice -}}
+{{- $page := $gallery -}}
 {{ range $lines }}
     {{- if strings.Contains . "![" -}}
         {{- $mdImgParts := split (strings.TrimSpace .) "(" -}}
@@ -20,7 +21,18 @@
                     {{- $imgTitle = index $titleDescParts 0 -}}
                     {{- $imgDesc = index $titleDescParts 1 -}}
                 {{- end -}}
-                {{- $mdImages = $mdImages | append (dict "url" $imgUrl "title" $imgTitle "description" $imgDesc) -}}
+                {{- /* 处理相对路径的图片 */ -}}
+                {{- if strings.HasPrefix $imgUrl "./" -}}
+                    {{- $imgName := strings.TrimPrefix "./" $imgUrl -}}
+                    {{- $resourceImg := $page.Resources.GetMatch $imgName -}}
+                    {{- if $resourceImg -}}
+                        {{- $mdImages = $mdImages | append (dict "url" $resourceImg.RelPermalink "title" $imgTitle "description" $imgDesc "isResource" true "resource" $resourceImg) -}}
+                    {{- else -}}
+                        {{- $mdImages = $mdImages | append (dict "url" $imgUrl "title" $imgTitle "description" $imgDesc "isResource" false) -}}
+                    {{- end -}}
+                {{- else -}}
+                    {{- $mdImages = $mdImages | append (dict "url" $imgUrl "title" $imgTitle "description" $imgDesc "isResource" false) -}}
+                {{- end -}}
             {{- end -}}
         {{- end -}}
     {{- else if strings.Contains . ";" -}}
@@ -31,6 +43,19 @@
             {{- $videos = merge $videos (dict (index $imgVideo 0) (index $imgVideo 1)) -}}
         {{- else -}}
             {{ $map = merge $map (dict (index $descr 0) (index $descr 1)) }}
+            {{- /* 添加对分号分隔图片格式的支持 */ -}}
+            {{- $imgUrl := index $descr 0 -}}
+            {{- $imgTitle := "" -}}
+            {{- if ge (len $descr) 2 -}}
+                {{- $imgTitle = index $descr 1 -}}
+            {{- end -}}
+            {{- /* 处理本地图片资源 */ -}}
+            {{- $resourceImg := $page.Resources.GetMatch $imgUrl -}}
+            {{- if $resourceImg -}}
+                {{- $mdImages = $mdImages | append (dict "url" $resourceImg.RelPermalink "title" $imgTitle "description" "" "isResource" true "resource" $resourceImg) -}}
+            {{- else -}}
+                {{- $mdImages = $mdImages | append (dict "url" $imgUrl "title" $imgTitle "description" "" "isResource" false) -}}
+            {{- end -}}
         {{- end -}}
     {{- end -}}
 {{ end }}
@@ -55,7 +80,12 @@
                         {{- range first $photosCount $mdImages -}}
                             <figure data-src="{{ .url }}" class="grid-item">
                                 <div class="square-image-container">
-                                    <img src="{{ .url }}" alt="{{ .title }}" class="square-image">
+                                    {{- if .isResource -}}
+                                        {{- $preview := .resource.Fill "800x800 q90 Smart" -}}
+                                        <img src="{{ $preview.RelPermalink }}" alt="{{ .title }}" class="square-image">
+                                    {{- else -}}
+                                        <img src="{{ .url }}" alt="{{ .title }}" class="square-image">
+                                    {{- end -}}
                                 </div>
                             </figure>
                             {{- $mdImagesCount = add $mdImagesCount 1 -}}
