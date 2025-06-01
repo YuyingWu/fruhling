@@ -5,8 +5,10 @@ lightGallery(document.getElementById('photo-mosaic'), {
     mode: 'lg-fade',
     download: false,
     counter: false,
-    allowMediaOverlap: true,
+    allowMediaOverlap: false,
     toggleThumb: true,
+    closeOnTap: true,
+    closeOnTapOutside: true,
     licenseKey: lightGalleryLicenseKey,
 });
 
@@ -15,6 +17,24 @@ lightGallery(document.querySelector('.page-container'), {
     selector: '.zoomable',
     plugins: [lgMediumZoom],
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    closeOnTap: true,
+    closeOnTapOutside: true,
+    licenseKey: lightGalleryLicenseKey,
+});
+
+// enable blog post images gallery
+lightGallery(document.querySelector('.blog-gallery'), {
+    selector: 'img',
+    plugins: [lgFullscreen, lgThumbnail],
+    speed: 500,
+    mode: 'lg-fade',
+    download: false,
+    counter: true,
+    allowMediaOverlap: false,
+    toggleThumb: true,
+    exThumbImage: 'src',
+    closeOnTap: true,
+    closeOnTapOutside: true,
     licenseKey: lightGalleryLicenseKey,
 });
 
@@ -57,16 +77,18 @@ masonryGalleries.forEach(function(gallery) {
 });
 
 // enable galleries in blog post titles
-document.querySelectorAll('.title-gallery').forEach(function(inlineTitleGallery) {
+document.querySelectorAll('.title-gallery:not(.post_internal_gallery .title-gallery)').forEach(function(inlineTitleGallery) {
     lightGallery(inlineTitleGallery, {
         plugins: [lgFullscreen, lgThumbnail, lgHash, lgVideo],
         speed: 500,
         mode: 'lg-fade',
         download: false,
-        allowMediaOverlap: true,
+        allowMediaOverlap: false,
         toggleThumb: true,
         hash: true,
         videojs: true,
+        closeOnTap: true,
+        closeOnTapOutside: true,
         videojsOptions: {
             autoplayFirstVideo: false,
             autoplayVideoOnSlide: true,

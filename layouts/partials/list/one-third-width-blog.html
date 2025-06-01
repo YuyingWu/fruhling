@@ -11,7 +11,13 @@
                 {{ if in .RawContent "<!--more-->" }}
                 {{ .Summary | safeHTML }}
                 {{ else }}
-                <p>{{ .Summary | safeHTML }}</p>
+                {{ with .Site.Params.fruhling.summaryLength }}
+                    {{ $summary := $.Content | plainify | truncate (int .) }}
+                    <p>{{ $summary }}</p>
+                {{ else }}
+                    {{ $summary := .Content | plainify | truncate 150 }}
+                    <p>{{ $summary }}</p>
+                {{ end }}
                 {{ end }}
             </div>
             <div class="post_nav"><a href="{{ .RelPermalink | relURL }}#read-more" class="link-arrow">{{ i18n "readMore" }} ➠</a></div>
