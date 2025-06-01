@@ -15,18 +15,35 @@
             {{- end -}}
         {{- end -}}
     {{- end -}}
-    {{- if eq $imgCount 0 -}}
-        **Error rendering embedded gallery. Directory "{{- $contentPath -}}" doesn't contain files of types {{ $allowedExtentions }}.**
-    {{- else -}}
-        {{- $gallery := .Site.GetPage $path -}}
-        {{- $lines := split $gallery.RawContent "\n" -}}
-        {{- $map := dict -}}
-        {{- range $lines -}}
+    {{- $gallery := .Site.GetPage $path -}}
+    {{- $lines := split $gallery.RawContent "\n" -}}
+    {{- $map := dict -}}
+    {{- $remoteImages := slice -}}
+    {{- range $lines -}}
+        {{- if hasPrefix . "![" -}}
+            {{- $parts := findRE `!\[(.*?)\]\((.*?)\)` . -}}
+            {{- range $parts -}}
+                {{- $matches := findRE `!\[(.*?)\]\((.*?)\)` . -}}
+                {{- range $matches -}}
+                    {{- $title := replaceRE `!\[(.*?)\].*` "$1" . -}}
+                    {{- $url := replaceRE `!\[.*?\]\((.*?)\)` "$1" . -}}
+                    {{- $remoteImages = $remoteImages | append (dict "title" $title "url" $url) -}}
+                {{- end -}}
+            {{- end -}}
+        {{- else -}}
             {{- $descr := split . ";" -}}
-            {{- $map = merge $map (dict (index $descr 0) (index $descr 1)) -}}
+            {{- if ge (len $descr) 2 -}}
+                {{- $map = merge $map (dict (index $descr 0) (index $descr 1)) -}}
+            {{- end -}}
         {{- end -}}
+    {{- end -}}
 <div class="post_internal_gallery swiper">
     <div class="swiper-wrapper title-gallery" style="text-align: center">
+        {{- range $remoteImages -}}
+        <figure data-src="{{ .url }}" data-thumb="{{ .url }}" class="swiper-slide">
+            <img src="{{ .url }}" alt="{{ .title }}">
+        </figure>
+        {{- end -}}
         {{- range $gallery.Resources.ByType "image" -}}
             {{- $originalImage := . -}}
             {{- $preview := $originalImage.Fit "970x728" -}}
@@ -56,7 +73,6 @@
     </div>
     <div class="swiper-pagination"></div>
 </div>
-    {{- end -}}
 {{- else -}}
     **Error rendering embedded gallery. Path "{{- $contentPath -}}" is not exists.**
 {{- end -}}
