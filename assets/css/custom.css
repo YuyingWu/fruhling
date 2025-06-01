@@ -240,8 +240,6 @@ blockquote {
     color: #8ad9fd !important;;
 }
 
-
-
 .post_content ul {
     padding-left: 15px;
 }
@@ -382,11 +380,6 @@ article img.zoomable {
     top: 0;
     z-index: 1000;
 }
-
-/*.story_title {*/
-/*    padding: 10px 30px;*/
-/*    text-shadow: 0 0 4px #d0d2ff;*/
-/*}*/
 
 .story_title {
     background: rgba(243, 243, 243, 0.85);

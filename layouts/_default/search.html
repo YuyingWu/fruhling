@@ -1,0 +1,38 @@
+{{ define "content" }}
+<main class="main search-page">
+    <div class="container">
+        <h1>{{ i18n "search" }}</h1>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="{{ i18n "search_placeholder" }}" aria-label="{{ i18n "search" }}">
+            <div id="search-results" class="search-results">
+                <p id="search-info">{{ i18n "search_info" }}</p>
+                <div id="search-results-container"></div>
+            </div>
+        </div>
+        
+        <template id="search-result-template">
+            <div class="search-result-item">
+                <h2>
+                    <a class="search-result-link" href="#">
+                        <span class="search-result-title"></span>
+                    </a>
+                </h2>
+                <div class="search-result-meta">
+                    <span class="search-result-date"></span>
+                </div>
+                <p class="search-result-summary"></p>
+            </div>
+        </template>
+    </div>
+</main>
+{{ end }}
+
+{{ define "footer_js" }}
+{{ $searchCSS := resources.Get "css/search.css" | resources.Minify | resources.Fingerprint }}
+<link rel="stylesheet" href="{{ $searchCSS.RelPermalink }}" integrity="{{ $searchCSS.Data.Integrity }}">
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+
+{{ $searchJS := resources.Get "js/search.js" | resources.Minify | resources.Fingerprint }}
+<script src="{{ $searchJS.RelPermalink }}" integrity="{{ $searchJS.Data.Integrity }}"></script>
+{{ end }} 

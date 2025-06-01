@@ -1,18 +1,25 @@
-<nav class="navbar navbar-expand-lg navbar-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-        <a class="navbar-brand logo" href="{{ site.BaseURL | relLangURL }}">{{ .Site.Title }}</a>
-        <button class="navbar-toggler hamburger-menu-btn" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
-                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span>toggle menu</span>
+        <a class="logo navbar-brand" href="{{ .Site.BaseURL }}">{{ .Site.Title }}</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-            <ul class="navbar-nav ml-auto">
-            {{- $currentPage := . -}}
-            {{- range .Site.Menus.main -}}
-                <li class="{{ if $currentPage.HasMenuCurrent "main" . }}active{{ else }}nav-item{{ end }}">
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                {{ range .Site.Menus.main }}
+                <li class="nav-item">
                     <a class="nav-link" href="{{ .URL }}">{{ .Name }}</a>
                 </li>
-            {{- end -}}
+                {{ end }}
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ "search" | relLangURL }}">
+                        <i class="fas fa-search"></i> {{ i18n "search" }}
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
