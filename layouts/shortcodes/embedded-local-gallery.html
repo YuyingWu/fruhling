@@ -1,5 +1,33 @@
+{{- $mdImages := slice -}}
+{{- if .Inner -}}
+    {{- $lines := split .Inner "\n" -}}
+    {{- range $lines -}}
+        {{- if strings.Contains . "![" -}}
+            {{- $mdImgParts := split (strings.TrimSpace .) "(" -}}
+            {{- if ge (len $mdImgParts) 2 -}}
+                {{- $imgUrl := index $mdImgParts 1 -}}
+                {{- $imgUrl = strings.TrimSuffix ")" $imgUrl -}}
+                {{- $titleParts := split (index $mdImgParts 0) "[" -}}
+                {{- if ge (len $titleParts) 2 -}}
+                    {{- $imgTitle := index $titleParts 1 -}}
+                    {{- $imgTitle = strings.TrimSuffix "]" $imgTitle -}}
+                    {{- $mdImages = $mdImages | append (dict "url" $imgUrl "title" $imgTitle) -}}
+                {{- end -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+
 <div class="post_internal_gallery swiper">
     <div class="swiper-wrapper title-gallery" style="text-align: center">
+        {{- /* 优先展示 Markdown 中的图片 */ -}}
+        {{- range $mdImages -}}
+            <figure data-src="{{ .url }}" class="swiper-slide">
+                <img src="{{ .url }}" alt="{{ .title }}">
+            </figure>
+        {{- end -}}
+
+        {{- /* 然后展示本地图片 */ -}}
         {{- range $.Params -}}
             {{- $originalImage := $.Page.Resources.GetMatch . -}}
             {{- $preview := $originalImage.Fit "970x728" -}}
@@ -17,9 +45,9 @@
                 {{- end -}}
             {{- end -}}
 
-        <figure data-src="{{ $image.RelPermalink | relURL }}" data-thumb="{{ $thumb.RelPermalink | relURL }}" class="swiper-slide">
-            <img src="{{ $preview.RelPermalink | relURL }}">
-        </figure>
+            <figure data-src="{{ $image.RelPermalink | relURL }}" data-thumb="{{ $thumb.RelPermalink | relURL }}" class="swiper-slide">
+                <img src="{{ $preview.RelPermalink | relURL }}">
+            </figure>
         {{- end -}}
     </div>
     <div class="swiper-pagination"></div>

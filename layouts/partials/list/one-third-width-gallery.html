@@ -2,37 +2,69 @@
 
 {{- $lines := split $gallery.RawContent "\n" -}}
 {{- $map := dict -}}
+{{- $mdImages := slice -}}
 {{- range $lines -}}
-    {{- $descr := split . ";" -}}
-    {{- $map = merge $map (dict (index $descr 0) (index $descr 1)) -}}
+    {{- if strings.Contains . "![" -}}
+        {{- $mdImgParts := split (strings.TrimSpace .) "(" -}}
+        {{- if ge (len $mdImgParts) 2 -}}
+            {{- $imgUrl := index $mdImgParts 1 -}}
+            {{- $imgUrl = strings.TrimSuffix ")" $imgUrl -}}
+            {{- $titleParts := split (index $mdImgParts 0) "[" -}}
+            {{- if ge (len $titleParts) 2 -}}
+                {{- $imgTitle := index $titleParts 1 -}}
+                {{- $imgTitle = strings.TrimSuffix "]" $imgTitle -}}
+                {{- $mdImages = $mdImages | append (dict "url" $imgUrl "title" $imgTitle) -}}
+            {{- end -}}
+        {{- end -}}
+    {{- else if strings.Contains . ";" -}}
+        {{- $descr := split . ";" -}}
+        {{- $map = merge $map (dict (index $descr 0) (index $descr 1)) -}}
+    {{- end -}}
 {{- end -}}
 <div{{- if .Draft -}} class="draft"{{- end -}}>
     <article>
         <div class="post_img swiper post_text_top_radius">
             <div class="swiper-wrapper title-gallery" style="text-align: center">
-                {{- range first 10 ($gallery.Resources.ByType "image") -}}
-                {{- $preview := .Fit "970x728 q100" -}}
-                {{- $thumb := .Fit "96x76 q100" -}}
-                {{- $title := index $map .Name -}}
-                {{- $image := .Fit "1920x1920 q90" -}}
+                {{- /* 优先展示 Markdown 中的图片，最多10张 */ -}}
+                {{- $maxImages := 10 -}}
+                {{- $mdImagesCount := 0 -}}
+                {{- range first $maxImages $mdImages -}}
+                <figure data-src="{{- .url -}}" class="swiper-slide">
+                    <div class="square-image-container">
+                        <img src="{{- .url -}}" alt="{{- .title -}}" class="square-image">
+                    </div>
+                </figure>
+                {{- $mdImagesCount = add $mdImagesCount 1 -}}
+                {{- end -}}
+                
+                {{- /* 如果 Markdown 图片少于10张，继续展示目录中的图片填充剩余位置 */ -}}
+                {{- $remainingSlots := sub $maxImages $mdImagesCount -}}
+                {{- range first $remainingSlots ($gallery.Resources.ByType "image") -}}
                 {{- $originalImage := . -}}
+                {{- /* 使用 Fill 处理图片为方形 */ -}}
+                {{- $preview := $originalImage.Fill "800x800 q90 Smart" -}}
+                {{- $thumb := $originalImage.Fill "96x96 q90 Smart" -}}
+                {{- $image := $originalImage.Fill "1200x1200 q90 Smart" -}}
+                {{- $title := index $map .Name -}}
                 {{- with .Exif -}}
                     {{- if eq 6 .Tags.Orientation -}}
-                        {{- $image = $originalImage.Fit "1920x1920 q90 r270" -}}
-                        {{- $preview = $originalImage.Fit "970x728 q90 r270" -}}
-                        {{- $thumb = $originalImage.Fit "96x76 q90 r270" -}}
+                        {{- $image = $originalImage.Fill "1200x1200 q90 Smart r270" -}}
+                        {{- $preview = $originalImage.Fill "800x800 q90 Smart r270" -}}
+                        {{- $thumb = $originalImage.Fill "96x96 q90 Smart r270" -}}
                     {{- else if eq 8 .Tags.Orientation -}}
-                        {{- $image = $originalImage.Fit "1920x1920 q90 r90" -}}
-                        {{- $preview = $originalImage.Fit "970x728 q90 r90" -}}
-                        {{- $thumb = $originalImage.Fit "96x76 q90 r90" -}}
+                        {{- $image = $originalImage.Fill "1200x1200 q90 Smart r90" -}}
+                        {{- $preview = $originalImage.Fill "800x800 q90 Smart r90" -}}
+                        {{- $thumb = $originalImage.Fill "96x96 q90 Smart r90" -}}
                     {{- else if eq 3 .Tags.Orientation -}}
-                        {{- $image = $originalImage.Fit "1920x1920 q90 r180" -}}
-                        {{- $preview = $originalImage.Fit "970x728 q90 r180" -}}
-                        {{- $thumb = $originalImage.Fit "96x76 q90 r180" -}}
+                        {{- $image = $originalImage.Fill "1200x1200 q90 Smart r180" -}}
+                        {{- $preview = $originalImage.Fill "800x800 q90 Smart r180" -}}
+                        {{- $thumb = $originalImage.Fill "96x96 q90 Smart r180" -}}
                     {{- end -}}
                 {{- end -}}
                 <figure data-src="{{- $image.RelPermalink | relURL -}}" data-thumb="{{- $thumb.RelPermalink | relURL -}}" class="swiper-slide">
-                    <img src="{{- $preview.RelPermalink | relURL -}}" alt="{{- $title -}}">
+                    <div class="square-image-container">
+                        <img src="{{- $preview.RelPermalink | relURL -}}" alt="{{- $title -}}" class="square-image">
+                    </div>
                 </figure>
                 {{- end -}}
             </div>

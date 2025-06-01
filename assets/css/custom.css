@@ -386,3 +386,59 @@ spoiler:hover {
 spoiler.revealed {
     filter: none;
 }
+
+/* 方形图片容器样式 */
+.square-image-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* 创建一个正方形容器 */
+    overflow: hidden;
+}
+
+.square-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 保持图片比例并填充容器 */
+}
+
+/* 确保 swiper-slide 中的图片容器正确显示 */
+.swiper-slide figure {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* 确保 masonry-gallery 中的图片容器正确显示 */
+.masonry-gallery .grid-item {
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+.masonry-gallery .grid-item .square-image-container {
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 修复 masonry 布局 */
+.masonry-gallery .grid-sizer,
+.masonry-gallery .grid-item {
+    width: 33.333%;
+}
+
+@media screen and (min-width: 768px) {
+    .masonry-gallery .grid-sizer,
+    .masonry-gallery .grid-item {
+        width: 25%;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    .masonry-gallery .grid-sizer,
+    .masonry-gallery .grid-item {
+        width: 20%;
+    }
+}

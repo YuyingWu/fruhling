@@ -1,3 +1,9 @@
-{{- $resource := $.Page.Resources.GetMatch (.Get 0) -}}
+{{- $src := .Get 0 -}}
+{{- $title := .Get 1 -}}
+{{- if hasPrefix $src "http" -}}
+<img src="{{- $src -}}" title="{{- $title -}}" alt="{{- $title -}}" class="zoomable">
+{{- else -}}
+{{- $resource := $.Page.Resources.GetMatch $src -}}
 {{- $resource = $resource.Fit "1920x1080" -}}
-<img src="{{- $resource.Permalink | relURL }}" title="{{- (.Get 1) -}}" alt="{{- (.Get 1) -}}" class="zoomable">
+<img src="{{- $resource.Permalink | relURL }}" title="{{- $title -}}" alt="{{- $title -}}" class="zoomable">
+{{- end -}}

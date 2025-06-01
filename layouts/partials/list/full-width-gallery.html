@@ -3,14 +3,35 @@
 {{ $lines := split $gallery.RawContent "\n" }}
 {{ $map := dict }}
 {{- $videos := dict -}}
+{{- $mdImages := slice -}}
 {{ range $lines }}
-    {{ $descr := split . ";" }}
-    {{- if strings.Contains (index $descr 0) ":" -}}
-        {{- $imgVideo := split (index $descr 0) ":"  -}}
-        {{ $map = merge $map (dict (index $imgVideo 0) (index $descr 1)) }}
-        {{- $videos = merge $videos (dict (index $imgVideo 0) (index $imgVideo 1)) -}}
-    {{- else -}}
-        {{ $map = merge $map (dict (index $descr 0) (index $descr 1)) }}
+    {{- if strings.Contains . "![" -}}
+        {{- $mdImgParts := split (strings.TrimSpace .) "(" -}}
+        {{- if ge (len $mdImgParts) 2 -}}
+            {{- $imgUrl := index $mdImgParts 1 -}}
+            {{- $imgUrl = strings.TrimSuffix ")" $imgUrl -}}
+            {{- $titleParts := split (index $mdImgParts 0) "[" -}}
+            {{- if ge (len $titleParts) 2 -}}
+                {{- $imgTitle := index $titleParts 1 -}}
+                {{- $imgTitle = strings.TrimSuffix "]" $imgTitle -}}
+                {{- $imgDesc := "" -}}
+                {{- if strings.Contains $imgTitle ";" -}}
+                    {{- $titleDescParts := split $imgTitle ";" -}}
+                    {{- $imgTitle = index $titleDescParts 0 -}}
+                    {{- $imgDesc = index $titleDescParts 1 -}}
+                {{- end -}}
+                {{- $mdImages = $mdImages | append (dict "url" $imgUrl "title" $imgTitle "description" $imgDesc) -}}
+            {{- end -}}
+        {{- end -}}
+    {{- else if strings.Contains . ";" -}}
+        {{ $descr := split . ";" }}
+        {{- if strings.Contains (index $descr 0) ":" -}}
+            {{- $imgVideo := split (index $descr 0) ":"  -}}
+            {{ $map = merge $map (dict (index $imgVideo 0) (index $descr 1)) }}
+            {{- $videos = merge $videos (dict (index $imgVideo 0) (index $imgVideo 1)) -}}
+        {{- else -}}
+            {{ $map = merge $map (dict (index $descr 0) (index $descr 1)) }}
+        {{- end -}}
     {{- end -}}
 {{ end }}
 
@@ -28,21 +49,40 @@
                     <div class="grid-sizer"></div>
                     <div class="title-gallery" style="text-align: center">
                         {{- $photosCount := (or .Params.summary_photos_count 10) -}}
-                        {{- range first $photosCount ($gallery.Resources.ByType "image") -}}
-                            {{- $preview := .Fit "970x728 q90" -}}
-                            {{- $thumb := .Fit "96x76" -}}
-                            {{- $image := .Fit "1920x1920 q90" -}}
+                        
+                        {{- /* 优先展示 Markdown 中的图片 */ -}}
+                        {{- $mdImagesCount := 0 -}}
+                        {{- range first $photosCount $mdImages -}}
+                            <figure data-src="{{ .url }}" class="grid-item">
+                                <div class="square-image-container">
+                                    <img src="{{ .url }}" alt="{{ .title }}" class="square-image">
+                                </div>
+                            </figure>
+                            {{- $mdImagesCount = add $mdImagesCount 1 -}}
+                        {{- end -}}
+                        
+                        {{- /* 然后展示目录中的图片填充剩余位置 */ -}}
+                        {{- $remainingSlots := sub $photosCount $mdImagesCount -}}
+                        {{- range first $remainingSlots ($gallery.Resources.ByType "image") -}}
                             {{- $originalImage := . -}}
+                            {{- /* 使用 Fill 处理图片为方形 */ -}}
+                            {{- $preview := $originalImage.Fill "800x800 q90 Smart" -}}
+                            {{- $thumb := $originalImage.Fill "96x96 q90 Smart" -}}
+                            {{- $image := $originalImage.Fill "1200x1200 q90 Smart" -}}
                             {{- with .Exif -}}
                                 {{- if eq 6 .Tags.Orientation -}}
-                                    {{- $image = $originalImage.Fit "1920x1920 q90 r270" -}}
+                                    {{- $image = $originalImage.Fill "1200x1200 q90 Smart r270" -}}
+                                    {{- $preview = $originalImage.Fill "800x800 q90 Smart r270" -}}
+                                    {{- $thumb = $originalImage.Fill "96x96 q90 Smart r270" -}}
                                 {{- else if eq 8 .Tags.Orientation -}}
-                                    {{- $image = $originalImage.Fit "1920x1920 q90 r90" -}}
+                                    {{- $image = $originalImage.Fill "1200x1200 q90 Smart r90" -}}
+                                    {{- $preview = $originalImage.Fill "800x800 q90 Smart r90" -}}
+                                    {{- $thumb = $originalImage.Fill "96x96 q90 Smart r90" -}}
                                 {{- else if eq 3 .Tags.Orientation -}}
-                                    {{- $image = $originalImage.Fit "1920x1920 q90 r180" -}}
+                                    {{- $image = $originalImage.Fill "1200x1200 q90 Smart r180" -}}
+                                    {{- $preview = $originalImage.Fill "800x800 q90 Smart r180" -}}
+                                    {{- $thumb = $originalImage.Fill "96x96 q90 Smart r180" -}}
                                 {{- end -}}
-                                {{- $preview = $image.Fit "970x728 q100" -}}
-                                {{- $thumb = $image.Fit "96x76 q100" -}}
                             {{- end -}}
 
                             {{- $title := index $map .Name -}}
@@ -50,16 +90,22 @@
                         {{- if isset $videos .Name -}}
                             {{- if strings.Contains (index $videos .Name) "youtu" -}}
                             <figure data-src="{{- index $videos .Name -}}" data-poster="{{ $image.RelPermalink | relURL }}" class="grid-item">
-                                <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}">
+                                <div class="square-image-container">
+                                    <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}" class="square-image">
+                                </div>
                             </figure>
                             {{- else -}}
                             <figure data-video='{"source": [{"src":"{{- $gallery.RelPermalink -}}{{- index $videos .Name -}}", "type":"video/mp4"}], "attributes": {"preload": false, "controls": true}}' data-poster="{{ $image.RelPermalink | relURL }}" class="grid-item">
-                                <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}">
+                                <div class="square-image-container">
+                                    <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}" class="square-image">
+                                </div>
                             </figure>
                             {{- end -}}
                         {{- else -}}
                             <figure data-src="{{ $image.RelPermalink | relURL }}" data-thumb="{{ $thumb.RelPermalink | relURL }}" class="grid-item">
-                                <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}">
+                                <div class="square-image-container">
+                                    <img src="{{ $preview.RelPermalink | relURL }}" alt="{{ $title }}" class="square-image">
+                                </div>
                             </figure>
                         {{- end -}}
                         {{- end -}}

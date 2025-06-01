@@ -1,2 +1,8 @@
-{{ $resource := $.Page.Resources.GetMatch (.Get 0)}}
-<div class="float-right"><img src="{{- $resource.Permalink | relURL }}" title="{{- (.Get 1) -}}" alt="{{- (.Get 1) -}}" class="zoomable"></div>
+{{- $src := .Get 0 -}}
+{{- $title := .Get 1 -}}
+{{- if hasPrefix $src "http" -}}
+<div class="float-right"><img src="{{- $src -}}" title="{{- $title -}}" alt="{{- $title -}}" class="zoomable"></div>
+{{- else -}}
+{{- $resource := $.Page.Resources.GetMatch $src -}}
+<div class="float-right"><img src="{{- $resource.Permalink | relURL }}" title="{{- $title -}}" alt="{{- $title -}}" class="zoomable"></div>
+{{- end -}}

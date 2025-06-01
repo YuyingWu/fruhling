@@ -1,11 +1,40 @@
-{{ $titleGallery := .Page.Params.title_gallery }}
-{{ if $titleGallery }}
-    {{ partial "embedded-gallery-partial.html" . $titleGallery }}
-{{ else }}
-    {{ $images := .Resources.ByType "image" }}
-    {{ with $image := ($images.GetMatch "*cover*") }}
-<div class="post_img">
-    <img src="{{ $image.RelPermalink | relURL }}" alt="{{ .Title }}" class="zoomable">
-</div>
+{{- /* 首先检查 Markdown 中的图片 */ -}}
+{{- $lines := split .RawContent "\n" -}}
+{{- $mdImages := slice -}}
+{{- range $lines -}}
+    {{- if strings.Contains . "![" -}}
+        {{- $mdImgParts := split (strings.TrimSpace .) "(" -}}
+        {{- if ge (len $mdImgParts) 2 -}}
+            {{- $imgUrl := index $mdImgParts 1 -}}
+            {{- $imgUrl = strings.TrimSuffix ")" $imgUrl -}}
+            {{- $titleParts := split (index $mdImgParts 0) "[" -}}
+            {{- if ge (len $titleParts) 2 -}}
+                {{- $imgTitle := index $titleParts 1 -}}
+                {{- $imgTitle = strings.TrimSuffix "]" $imgTitle -}}
+                {{- $mdImages = $mdImages | append (dict "url" $imgUrl "title" $imgTitle) -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+
+{{- /* 如果有 Markdown 图片，显示第一张 */ -}}
+{{- with first 1 $mdImages -}}
+    {{- range . -}}
+        <div class="post_img">
+            <img src="{{ .url }}" alt="{{ .title }}" class="zoomable">
+        </div>
+    {{- end -}}
+{{- else -}}
+    {{- /* 如果没有 Markdown 图片，使用原有逻辑 */ -}}
+    {{ $titleGallery := .Page.Params.title_gallery }}
+    {{ if $titleGallery }}
+        {{ partial "embedded-gallery-partial.html" . $titleGallery }}
+    {{ else }}
+        {{ $images := .Resources.ByType "image" }}
+        {{ with $image := ($images.GetMatch "*cover*") }}
+            <div class="post_img">
+                <img src="{{ $image.RelPermalink | relURL }}" alt="{{ .Title }}" class="zoomable">
+            </div>
+        {{ end }}
     {{ end }}
-{{ end }}
+{{- end -}}

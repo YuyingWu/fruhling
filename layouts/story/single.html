@@ -10,16 +10,37 @@
 {{- $titles := dict -}}
 {{- $descriptions := dict -}}
 {{- $videos := dict -}}
+{{- $mdImages := slice -}}
 {{- range $lines -}}
-    {{- $descr := split . ";" -}}
-    {{- if strings.Contains (index $descr 0) ":" -}}
-        {{- $imgVideo := split (index $descr 0) ":"  -}}
-        {{- $titles = merge $titles (dict (index $imgVideo 0) (index $descr 1)) -}}
-        {{- $videos = merge $videos (dict (index $imgVideo 0) (index $imgVideo 1)) -}}
-    {{- else -}}
-        {{- $titles = merge $titles (dict (index $descr 0) (index $descr 1)) -}}
+    {{- if strings.Contains . "![" -}}
+        {{- $mdImgParts := split (strings.TrimSpace .) "(" -}}
+        {{- if ge (len $mdImgParts) 2 -}}
+            {{- $imgUrl := index $mdImgParts 1 -}}
+            {{- $imgUrl = strings.TrimSuffix ")" $imgUrl -}}
+            {{- $titleParts := split (index $mdImgParts 0) "[" -}}
+            {{- if ge (len $titleParts) 2 -}}
+                {{- $imgTitle := index $titleParts 1 -}}
+                {{- $imgTitle = strings.TrimSuffix "]" $imgTitle -}}
+                {{- $imgDesc := "" -}}
+                {{- if strings.Contains $imgTitle ";" -}}
+                    {{- $titleDescParts := split $imgTitle ";" -}}
+                    {{- $imgTitle = index $titleDescParts 0 -}}
+                    {{- $imgDesc = index $titleDescParts 1 -}}
+                {{- end -}}
+                {{- $mdImages = $mdImages | append (dict "url" $imgUrl "title" $imgTitle "description" $imgDesc) -}}
+            {{- end -}}
+        {{- end -}}
+    {{- else if strings.Contains . ";" -}}
+        {{- $descr := split . ";" -}}
+        {{- if strings.Contains (index $descr 0) ":" -}}
+            {{- $imgVideo := split (index $descr 0) ":"  -}}
+            {{- $titles = merge $titles (dict (index $imgVideo 0) (index $descr 1)) -}}
+            {{- $videos = merge $videos (dict (index $imgVideo 0) (index $imgVideo 1)) -}}
+        {{- else -}}
+            {{- $titles = merge $titles (dict (index $descr 0) (index $descr 1)) -}}
+        {{- end -}}
+        {{- $descriptions = merge $descriptions (dict (index $descr 0) (index $descr 2)) -}}
     {{- end -}}
-    {{- $descriptions = merge $descriptions (dict (index $descr 0) (index $descr 2)) -}}
 {{- end -}}
 
 <div class="container">
@@ -31,6 +52,14 @@
                         <div class="post_text story">
                             <div class="swiper">
                                 <div class="swiper-wrapper title-gallery" style="text-align: center">
+                                    {{- /* 优先展示 Markdown 中的图片 */ -}}
+                                    {{- range $mdImages -}}
+                                        <figure data-src="{{ .url }}"{{ if .description }} data-sub-html="<strong>{{ .title }}</strong>. {{ .description }}"{{ end }} class="swiper-slide">
+                                            <img src="{{ .url }}" alt="{{ .title }}">
+                                        </figure>
+                                    {{- end -}}
+
+                                    {{- /* 然后展示目录中的图片 */ -}}
                                     {{ $images := .Resources.ByType "image" }}
                                     {{- range $images -}}
                                         {{- $title := index $titles .Name -}}
