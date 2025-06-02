@@ -11,8 +11,7 @@
 
     {{- partial "partials/shared/opengraph.html" . -}}
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Remove Font Awesome -->
 
     {{- $booststrap := resources.Get "/css/bootstrap.min.css" | resources.Fingerprint -}}
     {{- $themeModules := resources.Get "/css/theme-modules.css" | resources.Fingerprint -}}

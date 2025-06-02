@@ -3162,6 +3162,7 @@ input[type="submit"],
   opacity: 1;
 }
 
+/* Remove Font Awesome accordion styles */
 .accordion .card-header h5 a:after {
   width: 39px;
   height: 39px;

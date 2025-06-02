@@ -1,7 +1,7 @@
 {{- $jquery := resources.Get "/js/jquery.min.js" | resources.Fingerprint -}}
 {{- $bootstrap := resources.Get "/js/plugins/bootstrap.bundle.min.js" | resources.Fingerprint -}}
-<script type="text/javascript" src="{{ $jquery.RelPermalink | relURL }}" integrity="{{ $jquery.Data.Integrity }}"></script>
-<script type="text/javascript" src="{{ $bootstrap.RelPermalink | relURL }}" integrity="{{ $bootstrap.Data.Integrity }}"></script>
+<script type="text/javascript" src="{{ $jquery.RelPermalink | relURL }}" integrity="{{ $jquery.Data.Integrity }}" async></script>
+<script type="text/javascript" src="{{ $bootstrap.RelPermalink | relURL }}" integrity="{{ $bootstrap.Data.Integrity }}" async></script>
 
 {{ $lightGalleryLicenseKey := "" }}
 {{- if .Site.Params.lightgallery.licenseKey -}}
